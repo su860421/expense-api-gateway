@@ -1,0 +1,309 @@
+# 微服務路由配置
+# 用於動態路由解析和代理轉發
+
+# 路由組配置
+groups:
+  - name: "auth"
+    prefix: "/api/v1/auth"
+    middleware: ["cors"]
+    routes:
+      - pattern: "/login"
+        methods: ["POST"]
+        service: "auth-service"
+        auth_required: false
+        timeout: 30s
+        strip_prefix: true
+        headers:
+          Content-Type: "application/json"
+      
+      - pattern: "/refresh"
+        methods: ["POST"]
+        service: "auth-service"
+        auth_required: false
+        timeout: 30s
+        strip_prefix: true
+        headers:
+          Content-Type: "application/json"
+      
+      - pattern: "/logout"
+        methods: ["POST"]
+        service: "auth-service"
+        auth_required: true
+        timeout: 30s
+        strip_prefix: true
+        headers:
+          Content-Type: "application/json"
+
+  - name: "users"
+    prefix: "/api/v1/users"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/:path"
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        service: "user-service"
+        auth_required: true
+        timeout: 30s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        headers:
+          Content-Type: "application/json"
+
+  - name: "expenses"
+    prefix: "/api/v1/expenses"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/:path"
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        service: "expense-service"
+        auth_required: true
+        timeout: 60s
+        strip_prefix: true
+        roles: ["user", "admin", "manager", "finance"]
+        headers:
+          Content-Type: "application/json"
+
+  - name: "approvals"
+    prefix: "/api/v1/approvals"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/:path"
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        service: "approval-service"
+        auth_required: true
+        timeout: 45s
+        strip_prefix: true
+        roles: ["manager", "admin"]
+        headers:
+          Content-Type: "application/json"
+
+  - name: "finance"
+    prefix: "/api/v1/finance"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/:path"
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        service: "finance-service"
+        auth_required: true
+        timeout: 60s
+        strip_prefix: true
+        roles: ["finance", "admin"]
+        headers:
+          Content-Type: "application/json"
+
+  - name: "files"
+    prefix: "/api/v1/files"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/upload"
+        methods: ["POST"]
+        service: "file-service"
+        auth_required: true
+        timeout: 300s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        max_body_size: 104857600  # 100MB
+        headers:
+          Content-Type: "multipart/form-data"
+      
+      - pattern: "/download/:path"
+        methods: ["GET"]
+        service: "file-service"
+        auth_required: true
+        timeout: 120s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        headers:
+          Content-Type: "application/octet-stream"
+      
+      - pattern: "/:path"
+        methods: ["GET", "POST", "PUT", "DELETE"]
+        service: "file-service"
+        auth_required: true
+        timeout: 60s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        headers:
+          Content-Type: "application/json"
+
+  - name: "ai"
+    prefix: "/api/v1/ai"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/analyze"
+        methods: ["POST"]
+        service: "ai-service"
+        auth_required: true
+        timeout: 120s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        headers:
+          Content-Type: "application/json"
+      
+      - pattern: "/ocr"
+        methods: ["POST"]
+        service: "ai-service"
+        auth_required: true
+        timeout: 180s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        max_body_size: 52428800  # 50MB
+        headers:
+          Content-Type: "multipart/form-data"
+      
+      - pattern: "/:path"
+        methods: ["GET", "POST"]
+        service: "ai-service"
+        auth_required: true
+        timeout: 120s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        headers:
+          Content-Type: "application/json"
+
+  - name: "notifications"
+    prefix: "/api/v1/notifications"
+    middleware: ["auth", "cors"]
+    routes:
+      - pattern: "/:path"
+        methods: ["GET", "POST", "PUT", "DELETE"]
+        service: "notification-service"
+        auth_required: true
+        timeout: 30s
+        strip_prefix: true
+        roles: ["user", "admin", "manager"]
+        headers:
+          Content-Type: "application/json"
+
+# 全局路由配置
+routes:
+  # 移除系統端點，改為在 router.go 中手動處理
+  # - pattern: "/api/v1/system/status"
+  #   methods: ["GET"]
+  #   service: "gateway-service"
+  #   auth_required: false
+  #   timeout: 10s
+  #   rewrite_path: "/internal/system/status"
+  #   headers:
+  #     Content-Type: "application/json"
+  
+  # - pattern: "/api/v1/system/metrics"
+  #   methods: ["GET"]
+  #   service: "gateway-service"
+  #   auth_required: false
+  #   timeout: 10s
+  #   rewrite_path: "/internal/system/metrics"
+  #   headers:
+  #     Content-Type: "application/json"
+  
+  # - pattern: "/api/v1/services"
+  #   methods: ["GET"]
+  #   service: "gateway-service"
+  #   auth_required: false
+  #   timeout: 10s
+  #   rewrite_path: "/internal/services"
+  #   headers:
+  #     Content-Type: "application/json"
+  
+  # - pattern: "/api/v1/services/:service"
+  #   methods: ["GET", "POST", "DELETE"]
+  #   service: "gateway-service"
+  #   auth_required: false
+  #   timeout: 10s
+  #   rewrite_path: "/internal/services"
+  #   headers:
+  #     Content-Type: "application/json"
+
+# 服務配置
+services:
+  auth-service:
+    hosts: ["localhost"]
+    port: 8088
+    health_check: "/health"
+    timeout: 30s
+    max_body_size: 1048576  # 1MB
+    headers:
+      X-Service-Name: "auth-service"
+      X-Gateway-Version: "1.0.0"
+  
+  user-service:
+    hosts: ["localhost"]
+    port: 8081
+    health_check: "/health"
+    timeout: 30s
+    max_body_size: 10485760  # 10MB
+    headers:
+      X-Service-Name: "user-service"
+      X-Gateway-Version: "1.0.0"
+  
+  expense-service:
+    hosts: ["localhost"]
+    port: 8082
+    health_check: "/health"
+    timeout: 60s
+    max_body_size: 52428800  # 50MB
+    headers:
+      X-Service-Name: "expense-service"
+      X-Gateway-Version: "1.0.0"
+  
+  approval-service:
+    hosts: ["localhost"]
+    port: 8083
+    health_check: "/health"
+    timeout: 45s
+    max_body_size: 10485760  # 10MB
+    headers:
+      X-Service-Name: "approval-service"
+      X-Gateway-Version: "1.0.0"
+  
+  finance-service:
+    hosts: ["localhost"]
+    port: 8084
+    health_check: "/health"
+    timeout: 60s
+    max_body_size: 10485760  # 10MB
+    headers:
+      X-Service-Name: "finance-service"
+      X-Gateway-Version: "1.0.0"
+  
+  file-service:
+    hosts: ["localhost"]
+    port: 8085
+    health_check: "/health"
+    timeout: 300s
+    max_body_size: 104857600  # 100MB
+    headers:
+      X-Service-Name: "file-service"
+      X-Gateway-Version: "1.0.0"
+  
+  ai-service:
+    hosts: ["localhost"]
+    port: 8086
+    health_check: "/health"
+    timeout: 180s
+    max_body_size: 52428800  # 50MB
+    headers:
+      X-Service-Name: "ai-service"
+      X-Gateway-Version: "1.0.0"
+  
+  notification-service:
+    hosts: ["localhost"]
+    port: 8087
+    health_check: "/health"
+    timeout: 30s
+    max_body_size: 10485760  # 10MB
+    headers:
+      X-Service-Name: "notification-service"
+      X-Gateway-Version: "1.0.0"
+  
+  gateway-service:
+    hosts: ["localhost"]
+    port: 8080
+    health_check: "/health"
+    timeout: 10s
+    max_body_size: 1048576  # 1MB
+    headers:
+      X-Service-Name: "gateway-service"
+      X-Gateway-Version: "1.0.0"
+
+# 配置版本
+version: "1.0.0"

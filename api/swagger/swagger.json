@@ -1,0 +1,166 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "AI 智能報銷系統 API Gateway",
+        "description": "API Gateway 提供統一的 API 入口，負責路由轉發、認證授權、限流監控等功能",
+        "version": "1.0.0",
+        "contact": {
+            "name": "API Support",
+            "email": "support@example.com"
+        }
+    },
+    "host": "localhost:8088",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "summary": "健康檢查",
+                "description": "檢查 API Gateway 的健康狀態",
+                "tags": [
+                    "System"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "服務健康",
+                        "schema": {
+                            "$ref": "#/definitions/HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/system/status": {
+            "get": {
+                "summary": "系統狀態",
+                "description": "獲取系統詳細狀態信息",
+                "tags": [
+                    "System"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "系統狀態信息",
+                        "schema": {
+                            "$ref": "#/definitions/SystemStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/system/metrics": {
+            "get": {
+                "summary": "系統指標",
+                "description": "獲取系統監控指標",
+                "tags": [
+                    "System"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "系統指標數據",
+                        "schema": {
+                            "$ref": "#/definitions/MetricsResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "HealthResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "healthy"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                }
+            }
+        },
+        "SystemStatusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "healthy"
+                },
+                "uptime": {
+                    "type": "string",
+                    "example": "2h30m15s"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                },
+                "services": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/ServiceStatus"
+                    }
+                }
+            }
+        },
+        "ServiceStatus": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "healthy"
+                },
+                "last_check": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "response_time": {
+                    "type": "string",
+                    "example": "15ms"
+                }
+            }
+        },
+        "MetricsResponse": {
+            "type": "object",
+            "properties": {
+                "request_count": {
+                    "type": "integer",
+                    "example": 1234
+                },
+                "error_count": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "average_response_time": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 45.2
+                },
+                "status_codes": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "System",
+            "description": "系統管理相關 API"
+        }
+    ]
+}
